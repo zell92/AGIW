@@ -14,7 +14,7 @@ public class TsvReader {
 	public TsvReader(){
 		this.settings = new TsvParserSettings(); //inizializzo l'oggetto setting del parser
 		settings.getFormat().setLineSeparator("\n"); //gli dico che ogni linea è separata da \n  
-		settings.setMaxCharsPerColumn(999999999); //massimo numeri di caratteri per una colonna
+		settings.setMaxCharsPerColumn(9999999); //massimo numeri di caratteri per una colonna
 		this.setParser(new TsvParser(settings)); //inizializzo l'oggetto parser
 		
 		

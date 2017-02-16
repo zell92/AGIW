@@ -8,11 +8,22 @@ public class DBPEdia {
 	
 	public static void main(String[]args){
 		TsvReader tr= new TsvReader();
+		String[] row;
 		tr.readIterative("instances_types.tsv");
 		Map<String, String> instancesTypes = new HashMap<String, String>();
-		String[] row;
-			while ((row = tr.readNextRow()) != null)
-				instancesTypes.put((String)(row[0].subSequence(28, row[0].length())), row[2]);	
+		String e1;
+		String e2;
+		
+			while ((row = tr.readNextRow()) != null){
+				e1=(String)(row[0].subSequence(28, row[0].length()));
+				e2=(String)(row[2].subSequence(28, row[2].length()));
+				if(e1.contains("#"))
+					e1="Thing";
+				if(e2.contains("#"))
+					e2="Thing";
+				instancesTypes.put(e1, e2);
+			}
+
 		tr.readIterative("sentences_all.tsv");
 	 	TsvPrinter tp = new TsvPrinter();
 		tp.init("unlabeled_fact.tsv");
@@ -23,9 +34,7 @@ public class DBPEdia {
 		int j=0;
 		int x=0;
 		boolean first=true;
-		String subject;
 		while ((row = tr.readNextRow()) != null) {
-			subject=row[0];
 			if(row[3]!=null){
 				st = new StringTokenizer(row[3]);
 				while (st.hasMoreTokens()) {
@@ -33,7 +42,11 @@ public class DBPEdia {
 						if( t.contains("[[") && first){
 							temp[j]=t;
 							j++;
-							temp[j]=instancesTypes.get(t.substring(2,t.indexOf('|')));
+							e1=instancesTypes.get(t.substring(2,t.indexOf('|')));
+							if(e1==null)
+								temp[j]="Thing";
+							else
+								temp[j]=e1;
 							j++;
 							first=false;
 						}
@@ -42,16 +55,23 @@ public class DBPEdia {
 							j++;
 							temp[j]=t;
 							j++;
-							temp[j]=instancesTypes.get(t.substring(2,t.indexOf('|')));
-							if((!pattern.equals("") && !pattern.equals(". ") && !pattern.equals(", ") && !pattern.equals("; ") ) && x<10 && (subject.equals(temp[3].substring(2,temp[3].indexOf('|'))) || subject.equals(temp[0].substring(2,temp[0].indexOf('|')))) )
+							e1=instancesTypes.get(t.substring(2,t.indexOf('|')));
+							if(e1==null)
+								temp[j]="Thing";
+							else
+								temp[j]=e1;
+							if((!pattern.equals("") && !pattern.equals(". ") && !pattern.equals(", ") && !pattern.equals("; ") ) && x<8 )
 								tp.writeRow(temp);
 							j=0;
 							x=0;
 							pattern= new String();
-							temp= new String[5];
 							temp[j]=t;
 							j++;
-							temp[j]=instancesTypes.get(t.substring(2,t.indexOf('|')));
+							e1=instancesTypes.get(t.substring(2,t.indexOf('|')));
+							if(e1==null)
+								temp[j]="Thing";
+							else
+								temp[j]=e1;
 							j++;
 						}
 						else{
