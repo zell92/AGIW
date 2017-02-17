@@ -1,1 +1,6 @@
 /bin/
+/unlabeled_facts.tsv
+/instances_types.tsv
+/sentences_all.tsv
+/unlabeled_fact.tsv
+/generalizated_fact.tsv

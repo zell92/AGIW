@@ -61,7 +61,9 @@ public class DBPEdia {
 							else
 								temp[j]=e1;
 							if((!pattern.equals("") && !pattern.equals(". ") && !pattern.equals(", ") && !pattern.equals("; ") ) && x<8 )
-								tp.writeRow(temp);
+								{tp.writeRow(temp);
+								System.out.println(temp[2]);
+								}
 							j=0;
 							x=0;
 							pattern= new String();
