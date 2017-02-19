@@ -1,12 +1,10 @@
 package it.uniroma3.dbpedia;
 
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class Generalization {
 
-	private List<String[]> dictionary;
+	private String dictonaryNat,dictonarySport;
 	public  String[] ordinal = {"first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",
 			"eleventh","twelfth","thirteenth","fourteenth","fifteenth","sixteenth","seventeenth",
 			"eighteenth","nineteenth","twentieth","thirtieth","fortieth","fiftieth","sixtieth","seventieth","eightieth",
@@ -14,17 +12,25 @@ public class Generalization {
 
 
 	public Generalization(){
+		dictonaryNat=" (?i)(";
+		dictonarySport=" (?i)(";
 		TsvReader tr = new TsvReader();
 		tr.readIterative("generalization.tsv");
-		dictionary = new ArrayList<String[]>();
 		String[] row;
-		while ((row = tr.readNextRow()) != null)
-			dictionary.add(row);	
+		while ((row = tr.readNextRow()) != null){
+			if (row[1].equals("NAT"))
+				dictonaryNat=dictonaryNat+"|"+row[0].replaceAll("\\s+$", "");
+			else if (row[1].equals("SPORT"))
+				dictonarySport=dictonarySport+"|"+row[0].replaceAll("\\s+$", "");
+		}
+		dictonaryNat=dictonaryNat+") ";
+		dictonarySport=dictonarySport+") ";
+			
 	}
 
-	//generalizza la frase per : Numeri ordinali, misure (peso e distanza), data, età, moneta,anno, mese, nazionalità e sport
+	//generalizza la frase per : Numeri ordinali, misure (peso e distanza), data, etï¿½, moneta,anno, mese, nazionalitï¿½ e sport
 	public String substituteWord(String phrase){
-		String newPhrase=" "+phrase.toLowerCase()+" ";
+		String newPhrase=" "+phrase+" ";
 		
 		//System.out.println(newPhrase);
 
@@ -48,7 +54,8 @@ public class Generalization {
 		newPhrase = convertYear(newPhrase);
 		newPhrase = convertMonth(newPhrase);
 
-		newPhrase = findInDictionary(newPhrase);
+		newPhrase = convertNationality(newPhrase);
+		newPhrase = convertSport(newPhrase);
 
 		//System.out.println(newPhrase);
 
@@ -57,49 +64,39 @@ public class Generalization {
 		return newPhrase.substring(1,newPhrase.length()-1);
 	}
 
-	private String findInDictionary(String phrase){
-		String finalString=phrase;
-		String subs ="";
-		String gen ="";
-		for (String[] p:this.dictionary){
-			int j = finalString.indexOf(p[0].toLowerCase());
-			if(j>-1)
-				if(p[0].length()>subs.length()){
-					subs=p[0];
-					gen = p[1];
-				}
 
-		}
-
-		int i = finalString.indexOf(subs.toLowerCase());
-		if(i==0)
-			finalString = finalString.replaceAll(subs.toLowerCase()+" ",gen+" ");
-		else
-			if(i==phrase.length()-subs.length())
-				finalString = finalString.replaceAll(" "+subs.toLowerCase()," "+gen);
-			else
-				finalString = finalString.replaceAll(" "+subs.toLowerCase()+" "," "+gen+" ");
-
-
-		return finalString;
-
-
-	}
 	private String convertOrdinal(String phrase){
 		String r = phrase;
 		
 		for(String w:phrase.split(" |\\.|,|;|:|\\?|!"))
 			for (String s: this.ordinal){
-			if (w.indexOf(s)>=0 || w.matches("[0-9]*[0-9](?:st|nd|rd|th)"))
+			if (w.indexOf("(?i)"+s)>=0 || w.matches("(?i)[0-9]*[0-9](?:st|nd|rd|th)"))
 				r=r.replaceAll(w,"ORD");
 		}
 		return r;
 
 	}
 	
+	private String convertNationality(String phrase){
+		String r = phrase;
+		r=r.replaceAll(this.dictonaryNat," NAT ");
+		return r;
+
+	}
+	
+	private String convertSport(String phrase){
+		String r = phrase;
+		r=r.replaceAll(this.dictonarySport," SPORT ");
+		return r;
+
+	}
+	
+
+	
+	
 	private String convertMeasure(String phrase){
 		String r = phrase;
-		r = r.replaceAll(" [0-9]+( |)(kg|g|kilogram|kilograms|gram|grams|metre|metres|m|km|kilometre|kilometres|cm|centimetre|"
+		r = r.replaceAll(" (?i)[0-9]+( |)(kg|g|kilogram|kilograms|gram|grams|metre|metres|m|km|kilometre|kilometres|cm|centimetre|"
 				+ "centimetres|\"|in|inches|inch|yard"
 				+ "|yd|yards|feet|foot|ft|byte|b|bit|kilobyte|kb|gigabyte|gb|terabyte|tb) "," MEASURE ");
 		return r;
@@ -130,7 +127,7 @@ public class Generalization {
 		//mmmm gg, aaaa
 		//mmm gg, aaaa
 		String r = phrase;
-		r = r.replaceAll("(([1-9][0-9][0-9][0-9]|[0-9][0-9]|[1-9])[/]([0-1][0-9]|[1-9])"
+		r = r.replaceAll("(?i)(([1-9][0-9][0-9][0-9]|[0-9][0-9]|[1-9])[/]([0-1][0-9]|[1-9])"
 				+ "[/]([1-2][0-9][0-9][0-9]|[0-9][0-9])|([1-9][0-9][0-9][0-9]|[0-9][0-9]|[1-9]) "
 				+ "([0-1][0-9]|[1-9]) ([1-2][0-9][0-9][0-9]|[0-9][0-9])|([1-9][0-9][0-9][0-9]|[0-9][0-9]|[1-9])"
 				+ "[-]([0-1][0-9]|[1-9])[-]([1-2][0-9][0-9][0-9]|[0-9][0-9])|([1-9][0-9][0-9][0-9]|[0-9][0-9]|[1-9])"
@@ -140,28 +137,28 @@ public class Generalization {
 				+ "(february|feb)|(march|mar)|(april|apr)|may|(june|jun)|(july|jul)|(august|aug)|(september|sep)|"
 				+ "(october|oct)|(november|nov)|(december|dec)) ([0-3][0-9]|[1-9]), ([1-2][0-9][0-9][0-9]))", "DATE");
 		
-		r = r.replaceAll("((january|jan)|(february|feb)|(march|mar)|(april|apr)|may|(june|jun)|(july|jul)|(august|aug)) [1-2][0-9][0-9][0-9]", "DATE");
+		r = r.replaceAll("(?i)((january|jan)|(february|feb)|(march|mar)|(april|apr)|may|(june|jun)|(july|jul)|(august|aug)) [1-2][0-9][0-9][0-9]", "DATE");
 		return r;
 	}
 	
 	private String convertAge (String phrase){
 		String r = phrase;
-		r = r.replaceAll(" ((at|age of) "
+		r = r.replaceAll(" (?i)(((at|age of) "
 				+ " ([1-9][0-9]|[1-9]|ten|eleven|twelve|thirteen|fourteen|fourteen|fifteen|sixteen|seventeen|"
 				+ "eighteen|nineteen|(|(one|a)(-|)hundred(|-and-|-))(|twenty|thirty|fourty|fifty|sixty|seventy|"
 				+ "eighty|ninety)(|-)(one|two|three|four|five|six|seven|eight|nine|))"
 				+ "( years old| yo|)|([1-9][0-9]|[1-9]|ten|eleven|twelve|thirteen|fourteen|fourteen|fifteen|"
 				+ "sixteen|seventeen|eighteen|nineteen|(|(one|a)(-|)hundred(|-and-|-))(|twenty|thirty|fourty|"
 				+ "fifty|sixty|seventy|eighty|ninety)(|-)(one|two|three|four|five|six|seven|eight|nine|)) "
-				+ "(years old|yo)) ", " AGE ");
+				+ "(years old|yo))) ", " AGE ");
 		return r;
 	}
 	
 	private String convertMoney (String phrase){
 		String r = phrase;
-		r = r.replaceAll("(€|\\$|£|¥)( |)[1-9]*[0-9](\\.[0-9]+|,[0-9]+|)|"
+		r = r.replaceAll("(?i)((â‚¬|\\$|Â£|Â¥)( |)[1-9]*[0-9](\\.[0-9]+|,[0-9]+|)|"
 				+ "[1-9]*[0-9](\\.[0-9]+|,[0-9]+|) (euro|dollar|pound|yen)(s|)|"
-				+ "[1-9]*[0-9](\\.[0-9]+|,[0-9]+|)( |)(€|\\$|£|¥)", "MONEY");
+				+ "[1-9]*[0-9](\\.[0-9]+|,[0-9]+|)( |)(â‚¬|\\$|Â£|Â¥))", "MONEY");
 		return r;
 	}
 	
@@ -173,7 +170,7 @@ public class Generalization {
 	
 	private String convertMonth (String phrase){
 		String r = phrase;
-		r = r.replaceAll(" ((on|in) (january|jan)|(february|feb)|(march|mar)|(april|apr)|may|(june|jun)|(july|jul)|(august|aug)) ", " MONTH ");
+		r = r.replaceAll(" (?i)((on|in) (january|jan)|(february|feb)|(march|mar)|(april|apr)|may|(june|jun)|(july|jul)|(august|aug)) ", " MONTH ");
 		return r;
 	}
 

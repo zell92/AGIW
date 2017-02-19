@@ -7,8 +7,8 @@ public class GeneralizationFacts {
 	public static void main(String[] args) {
 		Generalization g = new Generalization();
 		TsvReader tr= new TsvReader();
-		String[] row,temp= new String[5];
-		tr.readIterative("unlabeled_fact.tsv");
+		String[] row,temp;
+		tr.readIterative("unlabeled_facts_final.tsv");
 		long righe = 0;
 		long gen=0;
 
@@ -17,14 +17,12 @@ public class GeneralizationFacts {
 		tp.init("generalizated_fact.tsv");
 		
 		while ((row = tr.readNextRow()) != null){
-			temp [0]=row[0];
-			temp [1]=row[1];
-			temp [2]=g.substituteWord(row[2]);
-			temp [3]=row[3];
-			temp [4]=row[4];
+			temp = row;
+			String vecchia = row[3];
+			temp [3]=g.substituteWord(vecchia);
 			righe++;
-			if(!(row[2].toLowerCase()).equals(temp[2])){
-			System.out.println(row[2]+"-->"+temp[2]);
+			if(!(vecchia).equals(temp[3])){
+			System.out.println(vecchia+"-->"+temp[3]);
 			gen++;
 			}
 			tp.writeRow(temp);
@@ -32,7 +30,6 @@ public class GeneralizationFacts {
 		}
 		System.out.println("Sono stati generalizzati "+gen+" pattern su "+righe);
 		
-
 	}
 
 }
