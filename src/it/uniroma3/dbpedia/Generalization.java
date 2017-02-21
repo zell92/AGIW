@@ -1,6 +1,6 @@
 package it.uniroma3.dbpedia;
 
-
+import java.util.List;
 
 public class Generalization {
 
@@ -15,9 +15,8 @@ public class Generalization {
 		dictonaryNat=" (?i)(";
 		dictonarySport=" (?i)(";
 		TsvReader tr = new TsvReader();
-		tr.readIterative("generalization.tsv");
-		String[] row;
-		while ((row = tr.readNextRow()) != null){
+		List<String[]> rows=tr.readAll("generalization.tsv");
+		for (String [] row: rows){
 			if (row[1].equals("NAT"))
 				dictonaryNat=dictonaryNat+"|"+row[0].replaceAll("\\s+$", "");
 			else if (row[1].equals("SPORT"))
@@ -25,17 +24,17 @@ public class Generalization {
 		}
 		dictonaryNat=dictonaryNat+") ";
 		dictonarySport=dictonarySport+") ";
-			
+
 	}
 
 	//generalizza la frase per : Numeri ordinali, misure (peso e distanza), data, et�, moneta,anno, mese, nazionalit� e sport
 	public String substituteWord(String phrase){
 		String newPhrase=" "+phrase+" ";
-		
+
 		//System.out.println(newPhrase);
 
 
-		
+
 		newPhrase = convertOrdinal(newPhrase);
 		//System.out.println(newPhrase);
 
@@ -50,7 +49,7 @@ public class Generalization {
 
 		newPhrase = convertMoney(newPhrase);
 		//System.out.println(newPhrase);
-		
+
 		newPhrase = convertYear(newPhrase);
 		newPhrase = convertMonth(newPhrase);
 
@@ -67,33 +66,33 @@ public class Generalization {
 
 	private String convertOrdinal(String phrase){
 		String r = phrase;
-		
+
 		for(String w:phrase.split(" |\\.|,|;|:|\\?|!"))
 			for (String s: this.ordinal){
-			if (w.indexOf("(?i)"+s)>=0 || w.matches("(?i)[0-9]*[0-9](?:st|nd|rd|th)"))
-				r=r.replaceAll(w,"ORD");
-		}
+				if (w.indexOf(s)>=0 || w.matches("(?i)[0-9]*[0-9](?:st|nd|rd|th)"))
+					r=r.replaceAll("(?i)"+w,"ORD");
+			}
 		return r;
 
 	}
-	
+
 	private String convertNationality(String phrase){
 		String r = phrase;
 		r=r.replaceAll(this.dictonaryNat," NAT ");
 		return r;
 
 	}
-	
+
 	private String convertSport(String phrase){
 		String r = phrase;
 		r=r.replaceAll(this.dictonarySport," SPORT ");
 		return r;
 
 	}
-	
 
-	
-	
+
+
+
 	private String convertMeasure(String phrase){
 		String r = phrase;
 		r = r.replaceAll(" (?i)[0-9]+( |)(kg|g|kilogram|kilograms|gram|grams|metre|metres|m|km|kilometre|kilometres|cm|centimetre|"
@@ -102,7 +101,7 @@ public class Generalization {
 		return r;
 
 	}
-	
+
 
 	private String convertDate(String phrase){
 		//Date ammesse:
@@ -136,11 +135,11 @@ public class Generalization {
 				+ "(september|sep)|(october|oct)|(november|nov)|(december|dec)) ([1-2][0-9][0-9][0-9])|((january|jan)|"
 				+ "(february|feb)|(march|mar)|(april|apr)|may|(june|jun)|(july|jul)|(august|aug)|(september|sep)|"
 				+ "(october|oct)|(november|nov)|(december|dec)) ([0-3][0-9]|[1-9]), ([1-2][0-9][0-9][0-9]))", "DATE");
-		
+
 		r = r.replaceAll("(?i)((january|jan)|(february|feb)|(march|mar)|(april|apr)|may|(june|jun)|(july|jul)|(august|aug)) [1-2][0-9][0-9][0-9]", "DATE");
 		return r;
 	}
-	
+
 	private String convertAge (String phrase){
 		String r = phrase;
 		r = r.replaceAll(" (?i)(((at|age of) "
@@ -153,7 +152,7 @@ public class Generalization {
 				+ "(years old|yo))) ", " AGE ");
 		return r;
 	}
-	
+
 	private String convertMoney (String phrase){
 		String r = phrase;
 		r = r.replaceAll("(?i)((€|\\$|£|¥)( |)[1-9]*[0-9](\\.[0-9]+|,[0-9]+|)|"
@@ -161,13 +160,13 @@ public class Generalization {
 				+ "[1-9]*[0-9](\\.[0-9]+|,[0-9]+|)( |)(€|\\$|£|¥))", "MONEY");
 		return r;
 	}
-	
+
 	private String convertYear (String phrase){
 		String r = phrase;
 		r = r.replaceAll(" [1-2][0-9][0-9][0-9] ", " YEAR ");
 		return r;
 	}
-	
+
 	private String convertMonth (String phrase){
 		String r = phrase;
 		r = r.replaceAll(" (?i)((on|in) (january|jan)|(february|feb)|(march|mar)|(april|apr)|may|(june|jun)|(july|jul)|(august|aug)) ", " MONTH ");
